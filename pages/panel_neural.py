@@ -49,6 +49,23 @@ if st.button("Run Both Solvers"):
     
     with tab1:
         st.subheader("Cp Distribution Comparison")
+        with st.expander("🔍 Why Do Panel Method and NeuralFoil Differ?"):
+            st.write("""
+            **Short answer**: One is inviscid theory, the other includes viscous reality.
+            
+            | Aspect | Panel Method (Inviscid) | NeuralFoil (Viscous) |
+            |--------|---------------------------|----------------------|
+            | **Physics** | Potential flow, no friction | Boundary layer + transition + separation |
+            | **Cₚ Peaks** | Sharper, more extreme | Smoothed by boundary layer displacement |
+            | **Drag** | C_D ≈ 0 (d'Alembert's paradox) | Realistic profile + pressure drag |
+            | **Stall** | Never stalls (linear forever) | Predicts separation & lift drop-off |
+            | **Re Dependence** | None | Strong (thicker BL at low Re) |
+            
+            **Why this matters for learning**:  
+            Seeing both side-by-side shows *exactly where viscosity matters*.  
+            At low α, they agree on C_L (lift is mostly inviscid).  
+            Near stall or high drag, viscosity dominates — and NeuralFoil captures it.
+            """)
         fig_compare = go.Figure()
         # Panel method (use your reversed arrays if needed)
         fig_compare.add_scatter(x=results_panel['x_cp'], y=results_panel['Cp'], 
