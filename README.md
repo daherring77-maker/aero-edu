@@ -36,7 +36,6 @@ Perfect for undergraduate aerodynamics, self-study, or as a teaching assistant's
 | ![Cp Compare](docs/cp_compare.png)                    | ![Lift Viz](docs/lift_viz.png)         |
 | *Inviscid (blue) vs Viscous (red/orange) Cp curves*  | *Pressure vectors colored by Cp*       |
 
-> 💡 *Tip: Replace the `docs/*.png` paths above with your actual exported plots. Use `plt.savefig()` or Plotly's `write_image()` to generate them.*
 
 ---
 
