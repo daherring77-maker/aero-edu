@@ -51,7 +51,7 @@ def generate_naca_4digit(series, num_points=500, closed_trailing_edge=True):
     yc = np.zeros_like(x)
     dyc = np.zeros_like(x)
     
-    if p > 0:  # Only compute if cambered (not symmetric)
+    if m > 0 :  # Only compute if cambered (not symmetric)
         for i, xi in enumerate(x):
             if 0 <= xi < p:
                 yc[i] = m / p**2 * (2 * p * xi - xi**2)
@@ -183,21 +183,61 @@ def remove_duplicate_points(x, y, tol=1e-6):
 
 # NACA 4-digit generator (Cartesian x,y)
 # ─────────────────────────────────────────────────────────────
+def naca4_coords_neuralfoil(m, p, t, N=120):
+    x = np.linspace(0, 1, N)
+    yt = 5*t*(0.2969*np.sqrt(x) - 0.1260*x - 0.3516*x**2 + 
+              0.2843*x**3 - 0.1015*x**4)
+    
+    if p == 0 or m == 0:
+        yc = np.zeros_like(x)
+        dyc_dx = np.zeros_like(x)
+    else:
+        yc = np.where(x <= p, m/p**2 * (2*p*x - x**2), m/(1-p)**2 * ((1-2*p) + 2*p*x - x**2))
+        dyc_dx = np.where(x <= p, 2*m/p**2 * (p - x), 2*m/(1-p)**2 * (p - x))
+        
+    theta = np.arctan(dyc_dx)
+    xu = x - yt*np.sin(theta)
+    yu = yc + yt*np.cos(theta)
+    xl = x + yt*np.sin(theta)
+    yl = yc - yt*np.cos(theta)
+    
+    # 1️⃣ Force exact TE closure (eliminates crossing/self-intersection)
+    xu[-1] = xl[-1] = 1.0
+    yu[-1] = yl[-1] = 0.0
+    
+    # 2️⃣ Remove duplicate LE point (x=0 appears in both upper & lower)
+    xu, yu = xu[1:], yu[1:]
+    
+    # 3️⃣ Stack: Upper (near LE → TE) + Lower reversed (TE → LE)
+    coords = np.vstack([
+        np.column_stack([xu, yu]),
+        np.column_stack([xl[::-1], yl[::-1]])
+    ])
+    
+    return coords
 def naca4_coords(m, p, t, N=120):
     x = np.linspace(0, 1, N)
     yt = 5*t*(0.2969*np.sqrt(x) - 0.1260*x - 0.3516*x**2 + 
               0.2843*x**3 - 0.1015*x**4)
-    yc = np.where(x <= p,
-                  m/p**2 * (2*p*x - x**2),
-                  m/(1-p)**2 * ((1-2*p) + 2*p*x - x**2))
-    dyc_dx = np.where(x <= p,
-                      2*m/p**2 * (p - x),
-                      2*m/(1-p)**2 * (p - x))
+    
+    # ⚠️ Explicit guard: np.where evaluates BOTH branches, so p=0 crashes here
+    if p == 0 or m == 0:
+        yc = np.zeros_like(x)
+        dyc_dx = np.zeros_like(x)
+    else:
+        yc = np.where(x <= p,
+                      m/p**2 * (2*p*x - x**2),  
+                      m/(1-p)**2 * ((1-2*p) + 2*p*x - x**2))
+        dyc_dx = np.where(x <= p,
+                          2*m/p**2 * (p - x),
+                          2*m/(1-p)**2 * (p - x))
+                          
     theta = np.arctan(dyc_dx)
     xu, yu = x - yt*np.sin(theta), yc + yt*np.cos(theta)
     xl, yl = x + yt*np.sin(theta), yc - yt*np.cos(theta)
+    
     # Order: LE -> TE (upper), then TE -> LE (lower) for closed loop
     return np.vstack([
         np.column_stack([xu, yu]), 
         np.column_stack([xl[::-1], yl[::-1]])
-    ]) 
+    ])
