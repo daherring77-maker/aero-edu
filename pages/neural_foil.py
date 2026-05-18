@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
 import neuralfoil as nf
-from modules.naca_airfoil import naca4_coords
+from modules.naca_airfoil import naca4_coords, naca4_coords_neuralfoil
 
 # ─────────────────────────────────────────────────────────────
 # 2. Streamlit UI
@@ -20,7 +20,7 @@ with col1:
 
 if run_btn:
     m, p, t = int(naca[0])/100, int(naca[1])/10, int(naca[2:])/100
-    coords = naca4_coords(m, p, t, N=150)  # Cartesian (N,2)
+    coords = naca4_coords_neuralfoil(m, p, t, N=150)  # Cartesian (N,2)
 
     # ─────────────────────────────────────────────────────────
     # 3. NeuralFoil call

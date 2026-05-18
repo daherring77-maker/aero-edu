@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
 from modules.panel_solver import panel_method_airfoil 
-from modules.naca_airfoil import generate_naca_4digit, remove_duplicate_points, naca4_coords
+from modules.naca_airfoil import generate_naca_4digit, remove_duplicate_points, naca4_coords, naca4_coords_neuralfoil
 
 # ─────────────────────────────────────────────────────────────
 # 1. Common Inputs (run once)
@@ -38,7 +38,7 @@ if st.button("Run Both Solvers"):
     with st.spinner("Running NeuralFoil..."):
         import neuralfoil as nf
         m, p, t = int(naca[0])/100, int(naca[1])/10, int(naca[2:])/100
-        coords = naca4_coords(m, p, t, N=150)  # Cartesian (N,2)
+        coords = naca4_coords_neuralfoil(m, p, t, N=150)  # Cartesian (N,2)
         results_nf = nf.get_aero_from_coordinates(coords, alpha=alpha, Re=Re, model_size="xlarge"  # highest accuracy
     )
     
