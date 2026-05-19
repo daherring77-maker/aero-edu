@@ -207,6 +207,8 @@ def naca4_coords_neuralfoil(m, p, t, N=120):
     
     # 2️⃣ Remove duplicate LE point (x=0 appears in both upper & lower)
     #xu, yu = xu[1:], yu[1:]
+    # Remove consecutive duplicates
+    xu, yu = remove_duplicate_points(xu, yu)
     
     # 3️⃣ Stack: Upper (near LE → TE) + Lower reversed (TE → LE)
     coords = np.vstack([
